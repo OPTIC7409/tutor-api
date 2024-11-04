@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/OPTIC7409/tutor-api/internal/models"
+	"github.com/OPTIC7409/tutor-api/internal/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
@@ -77,5 +78,26 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
 	}
 
+	// Store the token in the database
+	user.Token = t
+	if err := h.DB.Save(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save token"})
+	}
+
 	return c.JSON(fiber.Map{"token": t})
+}
+
+func (h *AuthHandler) Logout(c *fiber.Ctx) error {
+	userID, err := utils.ExtractUserIDFromToken(c, h.DB)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
+	}
+
+	// Clear the token in the database
+	result := h.DB.Model(&models.User{}).Where("id = ?", userID).Update("token", "")
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to logout"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Logged out successfully"})
 }

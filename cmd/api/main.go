@@ -55,7 +55,7 @@ func main() {
 	tutorHandler := handlers.NewTutorHandler(db)
 	studentHandler := handlers.NewStudentHandler(db)
 	chatHandler := handlers.NewChatHandler(db)
-
+	userHandler := handlers.NewUserHandler(db)
 	api := app.Group("/api")
 
 	auth := api.Group("/auth")
@@ -81,6 +81,9 @@ func main() {
 	chats.Get("/:id", chatHandler.GetChat)
 	chats.Post("/", chatHandler.CreateChat)
 	chats.Post("/:id/messages", chatHandler.SendMessage)
+
+	user := api.Group("/user")
+	user.Get("/dashboard", userHandler.GetDashboardData)
 
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {

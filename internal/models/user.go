@@ -1,16 +1,21 @@
 package models
 
 import (
+	"time"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	Name     string `gorm:"size:255;not null"`
-	Email    string `gorm:"size:255;not null;unique"`
-	Password string `gorm:"size:255;not null"`
-	UserType string `gorm:"size:50;not null"`
+	ID        uint      `gorm:"primarykey" json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `gorm:"uniqueIndex" json:"email"`
+	Password  string    `json:"-"`
+	UserType  string    `json:"userType"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	Token     string    `json:"-"` // New field to store the token
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
